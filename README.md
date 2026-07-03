@@ -2,6 +2,14 @@
 
 Repo: https://github.com/Alfonso-Castano/claude-init-project
 
+## Quick install
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Alfonso-Castano/claude-init-project/main/install.sh | bash
+```
+
+This installs the skill and agents to `~/.claude/` in one step. Details on what gets installed and how below.
+
 Two things to install, both at the **user level** (`~/.claude/`) so this works identically in every project, per the consistency requirement.
 
 ## 0. Push this folder to the repo (one-time)
@@ -57,15 +65,7 @@ Once step 0 is pushed, you never need these local files again. On any machine, i
 
 Claude Code has git and bash access by default and will do this itself — no scripts to run by hand. You only need to say this once per machine; after that `~/.claude/` already has it and every project picks it up automatically.
 
-**Manual equivalent**, if you'd rather run it yourself:
-
-```bash
-git clone https://github.com/Alfonso-Castano/claude-init-project.git /tmp/claude-init-project
-mkdir -p ~/.claude/skills ~/.claude/agents
-cp -r /tmp/claude-init-project/skills/init-project ~/.claude/skills/
-cp /tmp/claude-init-project/agents/*.md ~/.claude/agents/
-rm -rf /tmp/claude-init-project
-```
+**Manual equivalent**, if you'd rather run it yourself — see [Quick install](#quick-install) above for the one-liner (`install.sh`), which does exactly this.
 
 ## Updating later
 
