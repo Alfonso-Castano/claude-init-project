@@ -4,8 +4,8 @@ Repo: https://github.com/Alfonso-Castano/claude-init-project
 
 ## Quick install
 
-```bash
-curl -fsSL https://raw.githubusercontent.com/Alfonso-Castano/claude-init-project/main/install.sh | bash
+```powershell
+Invoke-RestMethod https://raw.githubusercontent.com/Alfonso-Castano/claude-init-project/main/install.sh | bash
 ```
 
 This installs the skill and agents to `~/.claude/` in one step. Details on what gets installed and how below.
