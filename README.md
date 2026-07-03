@@ -4,11 +4,36 @@ Repo: https://github.com/Alfonso-Castano/claude-init-project
 
 ## Quick install
 
+This repo has two independently-installable pieces: **`/init-project`** (one-time project setup) and **`/update-context`** (ongoing `.context/` maintenance). Install either one alone, or both together — `install.sh` takes an optional component argument.
+
+**`/init-project` only** (default — no argument needed):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Alfonso-Castano/claude-init-project/main/install.sh | bash
+```
 ```powershell
 Invoke-RestMethod https://raw.githubusercontent.com/Alfonso-Castano/claude-init-project/main/install.sh | bash
 ```
 
-This installs the skill and agents to `~/.claude/` in one step. Details on what gets installed and how below.
+**`/update-context` only:**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Alfonso-Castano/claude-init-project/main/install.sh | bash -s -- context-update
+```
+```powershell
+Invoke-RestMethod https://raw.githubusercontent.com/Alfonso-Castano/claude-init-project/main/install.sh | bash -s -- context-update
+```
+
+**Both:**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Alfonso-Castano/claude-init-project/main/install.sh | bash -s -- all
+```
+```powershell
+Invoke-RestMethod https://raw.githubusercontent.com/Alfonso-Castano/claude-init-project/main/install.sh | bash -s -- all
+```
+
+Each installs its own skill/agent files to `~/.claude/` in one step. Details on what gets installed and how below.
 
 Two things to install, both at the **user level** (`~/.claude/`) so this works identically in every project, per the consistency requirement.
 
@@ -57,6 +82,51 @@ Copy the three files from `agents/` to:
 ~/.claude/agents/context-roadmapper.md
 ```
 
+## 3. /update-context (optional, separate from /init-project)
+
+`/update-context` keeps an existing `.context/` directory (STATE.md,
+DECISIONS.md, ROADMAP.md) current as work progresses — it's a different,
+recurring capability from `/init-project`'s one-time setup, and installs
+independently of it (see [Quick install](#quick-install) above for the
+`context-update`-only one-liner).
+
+**The skill:**
+
+```
+~/.claude/skills/update-context/SKILL.md
+```
+
+**The subagent** (does the actual read/write work, in its own isolated context):
+
+```
+~/.claude/agents/context-updater.md
+```
+
+**The staleness-check hook** (monitoring-only — never writes, never invokes Claude, just prints a reminder to stderr at session start if `.context/STATE.md` looks stale):
+
+```
+~/.claude/hooks/context-staleness-check.sh
+```
+
+The hook needs to be registered in `~/.claude/settings.json` under
+`hooks.SessionStart` — `install.sh` does this automatically (merging into
+any existing settings.json without disturbing other hooks or settings). If
+installing by hand, add:
+
+```json
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          { "type": "command", "command": "$HOME/.claude/hooks/context-staleness-check.sh" }
+        ]
+      }
+    ]
+  }
+}
+```
+
 ## Installing on any machine, going forward
 
 Once step 0 is pushed, you never need these local files again. On any machine, in any Claude Code session (terminal or IDE), just say:
@@ -92,3 +162,31 @@ A `.context/` directory in the project root:
 - `STATE.md` — always
 
 No `.claude/` scaffolding, no `config.json`, no CLAUDE.md changes — all of that was deliberately dropped per our discussion.
+
+## Using /update-context
+
+In a project that already has `.context/` (from `/init-project`), run:
+
+```
+/update-context
+```
+
+Like `/init-project`, it only triggers on explicit invocation
+(`disable-model-invocation: true`) — it never fires on its own from
+conversational cues. It delegates the actual git-history read and file
+writes to the `context-updater` subagent, running in its own isolated
+context so the main session's context budget isn't spent on it. If
+`.context/` doesn't exist yet in the current project, it says so and stops
+— it never creates one (`/init-project` is the only thing that does that).
+
+**What it updates:**
+
+- `STATE.md` — overwritten in place with a fresh snapshot (Current Position, Next Action)
+- `DECISIONS.md` — appended to, only if the git evidence shows a genuine new decision
+- `ROADMAP.md` — updated only if it already exists and a phase transitioned
+- `OVERVIEW.md` and `research/` — left untouched (static by design)
+
+**The staleness hook:** once installed, every new session prints a one-line
+stderr note if `STATE.md` is stale relative to new git activity — a visible
+nudge to run `/update-context`, not an automatic update. It never writes
+files and never invokes Claude on its own.
