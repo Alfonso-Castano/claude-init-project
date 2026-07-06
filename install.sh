@@ -82,6 +82,23 @@ install_context_update() {
   echo "✅ update-context skill, agent, and staleness hook installed to ~/.claude/"
 }
 
+install_feature_workflow() {
+  cp -r "$TMP_DIR/skills/feature" \
+        "$TMP_DIR/skills/feature-quick" \
+        "$TMP_DIR/skills/feature-discuss" \
+        "$TMP_DIR/skills/feature-plan" \
+        "$TMP_DIR/skills/feature-execute" \
+        "$TMP_DIR/skills/feature-verify" \
+        "$TMP_DIR/skills/orchestrator" \
+        "$TMP_DIR/skills/prompt-engineer" \
+        ~/.claude/skills/
+  cp "$TMP_DIR/agents/feature-planner.md" \
+     "$TMP_DIR/agents/feature-executor.md" \
+     "$TMP_DIR/agents/feature-reviewer.md" \
+     ~/.claude/agents/
+  echo "✅ feature-workflow skills and agents installed to ~/.claude/"
+}
+
 case "$COMPONENT" in
   init-project)
     install_init_project
@@ -89,12 +106,16 @@ case "$COMPONENT" in
   context-update)
     install_context_update
     ;;
+  feature-workflow)
+    install_feature_workflow
+    ;;
   all)
     install_init_project
     install_context_update
+    install_feature_workflow
     ;;
   *)
-    echo "Unknown component: '$COMPONENT' (expected: init-project, context-update, or all)" >&2
+    echo "Unknown component: '$COMPONENT' (expected: init-project, context-update, feature-workflow, or all)" >&2
     rm -rf "$TMP_DIR"
     exit 1
     ;;

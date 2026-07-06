@@ -4,7 +4,7 @@ Repo: https://github.com/Alfonso-Castano/claude-init-project
 
 ## Quick install
 
-This repo has two independently-installable pieces: **`/init-project`** (one-time project setup) and **`/update-context`** (ongoing `.context/` maintenance). Install either one alone, or both together — `install.sh` takes an optional component argument.
+This repo has three independently-installable pieces: **`/init-project`** (one-time project setup), **`/update-context`** (ongoing `.context/` maintenance), and **`feature-workflow`** (the recurring feature build loop — `/feature`, `/feature-quick`, `/feature-discuss`, `/feature-plan`, `/feature-execute`, `/feature-verify`). Install any one alone, or all together — `install.sh` takes an optional component argument.
 
 **`/init-project` only** (default — no argument needed):
 
@@ -24,7 +24,16 @@ curl -fsSL https://raw.githubusercontent.com/Alfonso-Castano/claude-init-project
 Invoke-RestMethod https://raw.githubusercontent.com/Alfonso-Castano/claude-init-project/main/install.sh | bash -s -- context-update
 ```
 
-**Both:**
+**`feature-workflow` only:**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Alfonso-Castano/claude-init-project/main/install.sh | bash -s -- feature-workflow
+```
+```powershell
+Invoke-RestMethod https://raw.githubusercontent.com/Alfonso-Castano/claude-init-project/main/install.sh | bash -s -- feature-workflow
+```
+
+**All three:**
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/Alfonso-Castano/claude-init-project/main/install.sh | bash -s -- all
@@ -126,6 +135,67 @@ installing by hand, add:
   }
 }
 ```
+
+## 4. /feature-workflow (the one-big-feature loop)
+
+The recurring loop for building a feature within an already-initialized project (`.context/` must already exist — run `/init-project` first if it doesn't). Installs independently of `/init-project` and `/update-context` (see [Quick install](#quick-install) above for the `feature-workflow`-only one-liner), but assumes `.context/OVERVIEW.md` and `.context/STATE.md` exist and are readable.
+
+**The skills** (each triggers only on explicit invocation — `disable-model-invocation: true`, matching `/init-project` and `/update-context`):
+
+```
+~/.claude/skills/feature/SKILL.md            → /feature          (router — classifies size, reports in-flight status)
+~/.claude/skills/feature-quick/SKILL.md      → /feature-quick    (fast path for small tasks)
+~/.claude/skills/feature-discuss/SKILL.md    → /feature-discuss  (capture implementation decisions)
+~/.claude/skills/feature-plan/SKILL.md       → /feature-plan     (research + decompose into task files)
+~/.claude/skills/feature-execute/SKILL.md    → /feature-execute  (run tasks, one fresh subagent each)
+~/.claude/skills/feature-verify/SKILL.md     → /feature-verify   (merged review + evidence gate)
+```
+
+**Two supporting skills, also installed by this component** (they're dependencies of the workflow above, not features on their own — `orchestrator` decides how to parallelize, `prompt-engineer` generates the actual dispatch prompts):
+
+```
+~/.claude/skills/orchestrator/SKILL.md
+~/.claude/skills/prompt-engineer/SKILL.md
+```
+
+**The subagents** (each runs in its own fresh context window — this is the anti-context-rot mechanism the whole workflow is built around):
+
+```
+~/.claude/agents/feature-planner.md
+~/.claude/agents/feature-executor.md
+~/.claude/agents/feature-reviewer.md
+```
+
+### Using it
+
+In a project that already has `.context/` (from `/init-project`):
+
+```
+/feature
+```
+
+Tell it what you want to build. It classifies the request:
+
+- **Small, well-understood, one or a few files** → routes to `/feature-quick`: does the work, writes one task file for the record, still requires fresh verification evidence before claiming done. No discuss/plan/verify ceremony.
+- **Everything else** → routes to the full loop: `/feature-discuss` → `/feature-plan` → `/feature-execute` → `/feature-verify`, run one at a time, in that order. Each writes its output to `.context/features/NNN-slug/` and tells you the next command.
+
+You can also invoke any of these directly if you already know which stage you're at (e.g. `/feature-plan --thorough` if you know a feature touches unfamiliar territory and want a fuller research pass before decomposition).
+
+### What it produces
+
+```
+.context/features/NNN-slug/
+  CONTEXT.md      # from /feature-discuss — decisions, scope
+  RESEARCH.md      # from /feature-plan — only if research happened
+  tasks/
+    001-*.md        # one file per task, never a monolithic plan
+    ...
+  REVIEW.md        # from /feature-verify — merged review + evidence
+```
+
+No `config.json` for this component — model-tier routing is decided per-task by the planner and read directly off each task file by `prompt-engineer`, rather than a separate project-level config file, matching the minimal-scaffolding precedent set by `/init-project`.
+
+After a feature passes `/feature-verify`, it suggests (never runs) `/update-context` — this workflow never invokes another skill's write path on your behalf.
 
 ## Installing on any machine, going forward
 
