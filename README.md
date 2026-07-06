@@ -2,6 +2,10 @@
 
 Repo: https://github.com/Alfonso-Castano/claude-init-project
 
+## Foundational CLAUDE.md
+
+[`CLAUDE.md`](CLAUDE.md) in the repo root is a project-agnostic template, not something this repo installs. Copy it into any new project's root, run `/init-project` if `.context/` doesn't exist yet, and fill in the bracketed placeholders (project name/tagline at the top, and the Architecture Quick Reference section at the bottom).
+
 ## Quick install
 
 This repo has three independently-installable pieces: **`/init-project`** (one-time project setup), **`/update-context`** (ongoing `.context/` maintenance), and **`feature-workflow`** (the recurring feature build loop — `/feature`, `/feature-quick`, `/feature-discuss`, `/feature-plan`, `/feature-execute`, `/feature-verify`). Install any one alone, or all together — `install.sh` takes an optional component argument.
