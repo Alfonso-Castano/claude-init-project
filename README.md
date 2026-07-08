@@ -199,7 +199,7 @@ You can also invoke any of these directly if you already know which stage you're
 
 No `config.json` for this component — model-tier routing is decided per-task by the planner and read directly off each task file by `prompt-engineer`, rather than a separate project-level config file, matching the minimal-scaffolding precedent set by `/init-project`.
 
-After a feature passes `/feature-verify`, it suggests (never runs) `/update-context` — this workflow never invokes another skill's write path on your behalf.
+After a feature passes `/feature-verify`, it suggests merging the feature branch back to main, then spawns the `context-updater` subagent directly as an announced final step to refresh `.context/`. No context write ever happens from an ambient trigger — only as part of a command the user explicitly ran, and `/feature-verify` is such a command.
 
 ## Installing on any machine, going forward
 

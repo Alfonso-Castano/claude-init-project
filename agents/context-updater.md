@@ -1,7 +1,7 @@
 ---
 name: context-updater
 description: Reads git history and the .context/ directory, then updates STATE.md, DECISIONS.md, and (conditionally) ROADMAP.md to reflect current project state. Spawned by /update-context — not meant to be invoked directly by name in conversation.
-tools: Read, Write, Edit, Bash(git log:*), Bash(git diff:*), Bash(git status:*), Glob
+tools: Read, Write, Edit, Bash(git log:*), Bash(git diff:*), Bash(git status:*), Bash(git add:*), Bash(git commit:*), Glob
 color: yellow
 ---
 
@@ -22,6 +22,22 @@ Read, in this order:
 2. `.context/OVERVIEW.md` — the project's scope and constraints (read-only reference, do not edit unless told otherwise below)
 3. `.context/DECISIONS.md` — the existing decision log
 4. `.context/ROADMAP.md` — if it exists; many simple projects won't have one
+
+Then check for feature records — the separate feature workflow
+(`/feature-discuss` → `/feature-plan` → `/feature-execute` → `/feature-verify`)
+writes to `.context/features/NNN-slug/`, and this is the only step where that
+gets noticed:
+- Glob `.context/features/*/` to list feature directories.
+- For each, determine status cheaply — do not read task bodies or the whole
+  `REVIEW.md`: grep the `**Status:**` lines across `tasks/*.md` (how many
+  are `done` vs. pending/in-progress/blocked), and check whether `REVIEW.md`
+  exists and what its `Result:` line says.
+- A feature is **in-flight** if its directory exists but has neither a
+  `CONTEXT.md` nor any task files yet (created, discussion not finished), or
+  if any task's status isn't `done`, or if it has a `CONTEXT.md` but no
+  `REVIEW.md` whose Result is PASS.
+- For an in-flight feature, additionally read just the `## Goal` line of its
+  `CONTEXT.md` — nothing else in that file.
 
 Then gather evidence of what's actually happened:
 - `git log --oneline -20`
@@ -50,6 +66,15 @@ resolve cleanly, a commit message referencing an unresolved bug), note it
 briefly as part of Current Position — don't invent a separate section for it
 if OVERVIEW.md's existing structure doesn't have one.
 
+When a feature from step 0 is in-flight, Current Position and Next Action
+come **primarily from the feature record**, with git evidence as
+corroboration rather than the primary source. Name the feature directory and
+its task progress (N of M tasks done, plus any failed or blocked), and route
+Next Action by what's actually missing: directory exists but neither
+`CONTEXT.md` nor `tasks/` yet → `/feature-discuss`; `CONTEXT.md` exists but no
+`tasks/` yet → `/feature-plan`; tasks pending/blocked/failed → `/feature-execute`;
+all tasks done but no PASS review → `/feature-verify`.
+
 ## 2. Update DECISIONS.md — append only
 
 This file is append-only. Never rewrite or remove existing entries.
@@ -66,6 +91,12 @@ Format (match the file's existing style if it differs from this):
 **Decision:** What was decided
 **Rationale:** Why — the constraint or tradeoff that drove it
 ```
+
+If a feature recently reached `Result: PASS` (i.e. since the last time
+STATE.md was updated), also mine that feature's `CONTEXT.md` —
+specifically the `Implementation Decisions` entries marked as decided by
+the user, not Claude's own default judgment calls — as candidates for
+DECISIONS.md entries.
 
 Bias toward skipping. Before appending, check the existing log for anything
 similar — this file exists so future sessions don't re-decide something
@@ -89,12 +120,22 @@ project's actual scope has genuinely changed since init (rare) — and if you
 do, say so explicitly in your summary, since that's a bigger deal than a
 routine update. `research/` is a point-in-time snapshot; never touch it.
 
-## 5. Report back
+## 5. Commit the context update
+
+If any files under `.context/` were actually changed in this pass, commit
+them: `git add .context && git commit -m "chore(context): update project context"`.
+Skip this step entirely if nothing under `.context/` changed.
+
+## 6. Report back
 
 Return a short summary to the parent session — this is what the user
 actually sees, so make it count:
 
 `Context updated. STATE.md: [current position in one line]. DECISIONS.md: [entry added / no change]. ROADMAP.md: [updated / not present / no change].`
+
+Extend that line with feature status whenever one is in flight or recently
+passed, e.g. `Feature: 004-rate-limiting in flight, 3/5 tasks done.` — or
+`Feature: 004-rate-limiting passed review.` if it just reached PASS.
 
 If the working tree looked mid-flight rather than at a clean stopping
 point, say that too, briefly.

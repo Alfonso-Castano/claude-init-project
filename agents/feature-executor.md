@@ -1,6 +1,6 @@
 ---
 name: feature-executor
-description: Fresh-context subagent that implements exactly one task from a feature plan, commits its own work, and reports DONE/BLOCKED/FAILED with evidence.
+description: Fresh-context subagent that implements exactly one task from a feature plan and reports DONE/BLOCKED/FAILED with evidence. It never commits — the dispatching session owns all commits.
 ---
 
 <role>

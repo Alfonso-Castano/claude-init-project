@@ -41,6 +41,6 @@ Template for a single file under `.context/features/NNN-slug/tasks/NNN-<slug>.md
 
 **Depends on drives wave grouping.** Tasks with no shared dependencies, and no dependency on each other, can run in the same parallel wave. `orchestrator`'s decomposition step uses this field directly — keep it accurate, not optimistic. Two tasks that touch the same file are not independent even if neither formally depends on the other.
 
-**Evidence gets filled in at completion, not at planning.** Leave it blank when the task file is written; the executor fills it in only after actually running the verification command in that turn.
+**Evidence gets filled in at completion, not at planning.** Leave it blank when the task file is written; `/feature-execute`'s main session fills it in from the executor's report, after the executor actually ran the verification command in that turn.
 
 </guidelines>

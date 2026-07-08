@@ -13,18 +13,15 @@ Explicit-invocation only (`/feature-discuss`). Never auto-triggers.
 
 Capture *how* to build the feature, not just *what* to build, before any planning happens. Planning cannot start on solid ground until these decisions exist. Output is `.context/features/NNN-slug/CONTEXT.md`.
 
+Shared conventions — directory layout, file ownership, task statuses, in-flight definition, feature numbering, branch and commit policy — live in `references/context-contract.md` in the `feature` skill's directory (installed at `~/.claude/skills/feature/references/context-contract.md`); follow it rather than re-deriving.
+
 </objective>
 
 <process>
 
 ## 1. Ground yourself
 
-```bash
-cat .context/OVERVIEW.md 2>/dev/null
-cat .context/STATE.md 2>/dev/null
-```
-
-Read only these two — not `research/`, not `DECISIONS.md` in full — unless the conversation surfaces a specific reason to check further. Keep this step cheap.
+`OVERVIEW.md` and `STATE.md` are already in context — the project `CLAUDE.md`'s `@imports` load both at session start. Re-read them directly only if they changed during this session, or if the imports are missing (no `CLAUDE.md`, or it lacks the `@imports` line). Don't read `research/` or `DECISIONS.md` in full — unless the conversation surfaces a specific reason to check further. Keep this step cheap.
 
 ## 2. Scope check (borrowed from brainstorming's discipline)
 
@@ -46,12 +43,18 @@ If the user prefers a fuller interview instead of assumptions-mode for this feat
 
 ## 4. Write CONTEXT.md
 
+If this skill was invoked directly (no `/feature` router before it) and `feature/NNN-slug` doesn't exist yet as a branch, create it now and record the pre-branch HEAD as the Base SHA — the same thing `/feature`'s step 3 normally does ahead of this skill:
+
 ```bash
+git rev-parse HEAD    # only if no feature branch exists yet — this is the Base SHA
+git checkout -b feature/NNN-slug
 mkdir -p .context/features/NNN-slug
 ```
 
 ```markdown
 # Feature: <name>
+
+**Base:** <starting commit SHA>
 
 ## Goal
 [One sentence — what this feature does]
@@ -63,12 +66,15 @@ mkdir -p .context/features/NNN-slug
 - [Decision]: [what was decided, and who decided it — user or Claude's default judgment]
 - ...
 
+## Global Constraints
+[Project-wide conventions every task in this feature must respect — established patterns, style rules, invariants. This is what `prompt-engineer` restates verbatim to executor subagents that never see this file.]
+
 ## Open Questions
 [Anything explicitly deferred to the planner or executor's judgment]
 ```
 
 ## 5. Hand off
 
-Tell the user the next command is `/feature-plan` (mention `--thorough` if this feature already looks like it needs real research — new ecosystem, unfamiliar library, etc. — so they can decide whether to pass it).
+Tell the user the next command is `/feature-plan`. Suggest `--thorough` whenever the feature introduces a dependency not already in the project's manifest, or is a first-in-this-repo integration (a new external service, protocol, or pattern this codebase hasn't used before) — either signals real research is needed before planning.
 
 </process>

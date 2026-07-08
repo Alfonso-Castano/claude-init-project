@@ -2,7 +2,7 @@
 name: feature-execute
 description: Run the task files produced by /feature-plan, one fresh-context executor subagent per task (or wave), one commit per completed task. Third step of the full feature loop.
 disable-model-invocation: true
-allowed-tools: Bash, Agent, Read
+allowed-tools: Bash, Agent, Read, Edit
 ---
 
 <runtime_note>
@@ -12,6 +12,8 @@ Explicit-invocation only (`/feature-execute`). Never auto-triggers.
 <objective>
 
 Execute the plan without letting this session's context absorb the actual work. Each task gets a fresh, cleanly-scoped subagent; nothing accumulates in the main session beyond a thin status ledger.
+
+Shared conventions — directory layout, file ownership, task statuses, in-flight definition, feature numbering, branch and commit policy — live in `references/context-contract.md` in the `feature` skill's directory (installed at `~/.claude/skills/feature/references/context-contract.md`); follow it rather than re-deriving.
 
 </objective>
 
@@ -41,7 +43,7 @@ Spawn the `feature-executor` subagent (`~/.claude/agents/feature-executor.md`) w
 
 The executor reports one of: **DONE** (with evidence — see the agent file), **BLOCKED** (missing information, needs a decision), or **FAILED** (attempted but verification didn't pass).
 
-- **DONE:** commit (one commit per task), mark the task file's status, move to the next task in the wave.
+- **DONE:** the main session (this skill) owns the commit — executor subagents never commit. Serially, one task at a time even within a parallel wave: mark the task file's Status/Evidence with the executor's report, stage only the files that task's `Files` section declares plus the task file itself, then commit (one commit per task). This is what keeps parallel waves safe — concurrent subagent commits would race on the git index lock and risk a commit scooping up a sibling task's half-finished files. Move to the next task in the wave once the commit lands.
 - **BLOCKED:** stop and ask the user — don't guess at the missing decision yourself.
 - **FAILED:** do not immediately re-dispatch with "try again." Apply root-cause-first triage before any second attempt:
   1. What's the actual observed failure (exact error, exact output) — not a guess at what's wrong.

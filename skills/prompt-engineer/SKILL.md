@@ -26,7 +26,7 @@ When a task file already exists, most of the five core questions are already ans
 Your job shrinks to three things:
 
 1. **Transcribe** the task file's content into the standard dispatch prompt structure below — don't re-derive or re-word what's already precise; copy exact paths, exact commands, exact interface names as written.
-2. **Select the model tier** from the task file's own `Model tier` field. Never omit this and never let it default to inheriting the parent session's model — an omitted model silently uses the most capable and most expensive option, which defeats the entire point of tiering. If the task file says `cheap`, the task's "What to do" should already contain complete, specific code — the implementer's job is transcription plus verification, not judgment. If `mid`, the implementer needs to apply judgment to a prose description. Reserve `quality` for tasks the planner explicitly flagged as architecturally significant.
+2. **Select the model tier** from the task file's own `Model tier` field, then resolve it to an actual model per the Model Tier Mapping below. Never omit this and never let it default to inheriting the parent session's model — an omitted model silently uses the most capable and most expensive option, which defeats the entire point of tiering. If the task file says `cheap`, the task's "What to do" should already contain complete, specific code — the implementer's job is transcription plus verification, not judgment. If `mid`, the implementer needs to apply judgment to a prose description. Reserve `quality` for tasks the planner explicitly flagged as architecturally significant.
 3. **Add anything assumed but not restated.** If the task file relies on a project-wide convention from the feature's `CONTEXT.md` (a Global Constraints line, an established pattern) without repeating it verbatim, add it explicitly here — the receiving subagent won't see `CONTEXT.md`, only what you hand it.
 
 Do not re-litigate the task's scope or re-interview for missing information in this mode — if the task file is genuinely ambiguous, that's a planning-quality problem to flag back to `/feature-plan`, not something to paper over with your own guesses here.
@@ -41,6 +41,18 @@ Use this when no structured task file exists. A good delegation prompt answers f
 5. **Verification** — how the agent confirms it worked
 
 If any of these are missing, the receiving agent will either ask questions (wasting time) or guess wrong (creating bugs).
+
+## Model Tier Mapping
+
+This is the canonical tier-to-model mapping — defined here, and nowhere else in the workflow. Every dispatch prompt resolves its tier through this table before it ships:
+
+| Tier | Model |
+|---|---|
+| `cheap` | `haiku` |
+| `mid` | `sonnet` |
+| `quality` | `opus` |
+
+These are the Agent tool's `model` parameter alias names, not dated model IDs, so the mapping keeps working across model releases without edits. Never resolve to `fable`, and never leave `model` omitted or inherited — an omitted `model` silently pulls the parent session's (usually most expensive) model, which defeats the entire point of tiering.
 
 ## Prompt Structure
 
@@ -66,7 +78,7 @@ Use this structure for all delegation prompts, in either mode. Adapt section dep
 [How to confirm the fix works — build command, what to check in simulator, expected behavior]
 
 ## Model
-[Explicit tier or model ID — never left to inherit]
+[Explicit tier or model ID — tier resolved to a model per Model Tier Mapping above; never left to inherit]
 
 ## Attachments
 [Note any screenshots, error logs, or reference files being provided alongside this prompt]
@@ -112,7 +124,7 @@ When crafting prompts for sub-agents spawned within a workflow (not fresh sessio
 - Be explicit about what the sub-agent should return (format, length, structure)
 - Include the specific question or task — don't rely on ambient context
 - Specify whether the sub-agent should write code or just research/analyze
-- Always specify the model explicitly — see Task-file mode above for how this is decided when a task file exists
+- Always specify the model explicitly, as a resolved model per the Model Tier Mapping above — see Task-file mode above for how the tier itself is decided when a task file exists
 
 ## Anti-Patterns
 

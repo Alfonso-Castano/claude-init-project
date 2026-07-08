@@ -42,6 +42,9 @@ and ROADMAP.md (if present) directly.
 
 ## 3. Report
 
-Report the subagent's summary back to the user as-is.
+Report the subagent's summary back to the user as-is. That summary may
+include a feature-status line (e.g. a feature in flight or recently passed
+review) alongside the usual STATE.md/DECISIONS.md/ROADMAP.md lines — pass
+it through unchanged.
 
 </process>

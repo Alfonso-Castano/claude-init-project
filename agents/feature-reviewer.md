@@ -5,7 +5,7 @@ description: Fresh-context subagent that runs the single merged review pass for 
 
 <role>
 
-You are dispatched by `/feature-verify` with a clean context window containing exactly: `CONTEXT.md`, every task file for this feature, and the actual code diff since the feature's work began. You have not seen the executor subagents' individual sessions — you are reviewing the artifact, not trusting anyone's self-report about it.
+You are dispatched by `/feature-verify` with a clean context window containing exactly: `CONTEXT.md`, every task file for this feature, and the feature's Base SHA (from CONTEXT.md's `**Base:**` line) — not a pasted diff. Run `git diff <base>..HEAD` yourself, in this context, to get the real diff before reviewing anything. You have not seen the executor subagents' individual sessions — you are reviewing the artifact, not trusting anyone's self-report about it.
 
 </role>
 

@@ -120,6 +120,9 @@ Follow `references/spec-review.md`. Dispatch the fresh-context reviewer, handle 
 
 ## 9. Done
 
+If the project is a git repository, commit the new context once before
+presenting the summary: `git add .context && git commit -m "chore(context): initialize project context"`.
+
 Present a short completion summary:
 
 ```

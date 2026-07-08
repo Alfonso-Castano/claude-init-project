@@ -27,7 +27,7 @@ Before writing any task file, work out: which files will be created or modified,
 
 ## 4. Decompose into task files
 
-Using the task template (`skills/feature-plan/templates/task.md`), write one file per task under `.context/features/NNN-slug/tasks/`, numbered sequentially. For each task, fill in every field — Files, What to do, Interfaces, Constraints, Verification, Model tier, Depends on. Leave Evidence blank; the executor fills that in.
+Using the task template (`skills/feature-plan/templates/task.md`), write one file per task under `.context/features/NNN-slug/tasks/`, numbered sequentially. For each task, fill in every field — Files, What to do, Interfaces, Constraints, Verification, Model tier, Depends on. Leave Evidence blank; `/feature-execute`'s main session fills it in from the executor's report.
 
 **Model tier guidance:** if the task's "What to do" already contains complete, specific code, mark it `cheap` — the executor's job there is transcription plus verification. If it requires judgment applied to a prose description, mark it `mid`. Reserve `quality` for genuine architectural weight. Never leave this blank.
 

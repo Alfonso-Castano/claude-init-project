@@ -50,21 +50,15 @@ For any new feature or non-trivial fix, start with `/feature` and describe what 
 
 Each stage writes to `.context/features/NNN-slug/` and tells you the next command — don't skip ahead. Every command here is explicit-invocation only; none fire on their own. Both paths end with a hard evidence gate before anything is called done (see **Verification Before Done** below) — this isn't optional ceremony, it's built into `/feature-quick` and `/feature-verify` directly.
 
-After a feature passes `/feature-verify`, run `/update-context` — the workflow will suggest this but never runs it for you.
+On PASS, `/feature-verify` refreshes `.context/` itself as an announced final step — no separate `/update-context` needed for that event. Run `/update-context` manually for every other occasion.
 
 ---
 
 ## Subagent Strategy
 
-Don't default to either extreme — always single-session, or always spawning agents. Whenever scope is ambiguous, invoke the **`orchestrator`** skill and work its decision ladder in order, stopping at the lowest level that gets the job done:
+Whenever scope is ambiguous, invoke the **`orchestrator`** skill and stop at the lowest rung of its ladder that works (single session → subagents → agent teams) — this applies to any task, not just `/feature-*` work.
 
-1. **Single session** (default) — simple, small, or heavily sequential work. Say so and stop; don't parallelize for its own sake.
-2. **Subagents** (use liberally once justified) — a side task would flood main context with output you won't reference again, work is self-contained and one-directional, or specialization genuinely helps.
-3. **Agent teams** (high bar) — only when teammates must message each other mid-task *and* work spans genuinely non-overlapping files. If you're unsure whether peer coordination is needed, it isn't — default to subagents.
-
-This ladder applies to any task, not just feature builds — invoke `orchestrator` directly any time, not only from inside `/feature-*`.
-
-Whatever gets delegated, generate the actual dispatch prompt via **`prompt-engineer`**, not from scratch by hand — it has a task-file mode (transcribe from an existing `.context/features/.../tasks/*.md` file — cheaper and more accurate) and a from-scratch mode (for ad-hoc delegation with no task file). Every dispatch prompt states an explicit model tier (cheap / mid / quality) — never let a subagent silently inherit the most expensive model available.
+Generate every dispatch prompt via **`prompt-engineer`** (task-file mode when a task file exists, from-scratch mode otherwise) — it owns the tier→model mapping. Every dispatch states an explicit model tier; never let a subagent silently inherit the most expensive model available.
 
 ---
 
@@ -79,14 +73,9 @@ Whatever gets delegated, generate the actual dispatch prompt via **`prompt-engin
 
 ## Verification Before Done
 
-Never mark anything complete without fresh evidence from this turn:
+Never mark anything complete without fresh evidence from this turn: name the exact command that proves the claim, run it now, read the output and exit code — "should work" means you skipped a step.
 
-1. Name the exact command that proves the claim.
-2. Run it now — not a memory of an earlier run, not a subagent's self-report taken at face value.
-3. Read the full output and the exit code.
-4. If it doesn't support the claim, say so plainly and keep working. Don't round up.
-
-*"Should work," "looks right," and "probably passes" are signals you skipped a step — go run the command.* This is a hard, mechanized gate inside `/feature-quick` and `/feature-verify`, not just a stated preference — see those skills for exactly how it's enforced.
+This is a hard, mechanized gate inside `/feature-quick` and `/feature-verify` — see those skills for exactly how it's enforced.
 
 ---
 

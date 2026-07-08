@@ -13,6 +13,8 @@ Explicit-invocation only (`/feature-quick`). Never auto-triggers.
 
 Handle a small task without the discuss → plan → execute → verify ceremony, while keeping two things the full loop has that are worth never skipping: a structured task record, and a hard evidence gate before claiming done.
 
+Shared conventions — directory layout, file ownership, task statuses, in-flight definition, feature numbering, branch and commit policy — live in `references/context-contract.md` in the `feature` skill's directory (installed at `~/.claude/skills/feature/references/context-contract.md`); follow it rather than re-deriving.
+
 </objective>
 
 <process>

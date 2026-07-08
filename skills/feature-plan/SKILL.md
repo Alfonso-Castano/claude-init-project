@@ -13,6 +13,8 @@ Explicit-invocation only (`/feature-plan`). Never auto-triggers. Accepts an opti
 
 Turn `CONTEXT.md` into a set of small, dependency-ordered task files that an executor can pick up with no further ambiguity. This is the step where ambiguity is most expensive — an unclear task produces an executor that guesses, and two executors guessing differently about the same concern produce conflicts.
 
+Shared conventions — directory layout, file ownership, task statuses, in-flight definition, feature numbering, branch and commit policy — live in `references/context-contract.md` in the `feature` skill's directory (installed at `~/.claude/skills/feature/references/context-contract.md`); follow it rather than re-deriving.
+
 </objective>
 
 <process>
